@@ -6,10 +6,23 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-
+	"html/template"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
+
+
+
+type Todo struct {
+	Title string
+	Done bool
+}
+
+type TodoPageData struct {
+	PageTitle string
+	Todos []Todo
+}
+
 
 func hellopage() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -126,7 +139,28 @@ func simple_sql() {
 
 }
 
-func main() {
-	http.ListenAndServe(":8081", nil)
+
+func htmltemp()  {
+	// tmpl,err := template.ParseFiles("layout.html")
+	//or
+	tmpl := template.Must(template.ParseFiles("layout.html"))
+ 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		data := TodoPageData{
+            PageTitle: "My TODO list",
+            Todos: []Todo{
+                {Title: "Task 1", Done: false},
+                {Title: "Task 2", Done: true},
+                {Title: "Task 3", Done: true},
+            },
+        }
+        tmpl.Execute(w,data)
+	})
+	http.ListenAndServe(":8081",nil)
 
 }
+
+
+// func main() {
+// 	http.ListenAndServe(":8081", nil)
+
+// }

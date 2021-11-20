@@ -1,0 +1,18 @@
+<html>
+<head>
+    <title>sdsfsdf</title>
+</head>
+
+<body>
+    <h1>{{.PageTitle}}</h1>
+    <ul>
+        {{range .Todos}}
+            {{if .Done}}
+             <li class="done">{{.Title}} is done</li>
+            {{else}}
+                <li>{{.Title}} awaits</li>
+            {{end}}
+        {{end}}
+    </ul>
+</body>
+</html>
