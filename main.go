@@ -1,28 +1,15 @@
 package main
 
-import "time"
 import (
 	"database/sql"
 	"fmt"
-	"log"
-	"net/http"
-	"html/template"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	"html/template"
+	"log"
+	"net/http"
+	"time"
 )
-
-
-
-type Todo struct {
-	Title string
-	Done bool
-}
-
-type TodoPageData struct {
-	PageTitle string
-	Todos []Todo
-}
-
 
 func hellopage() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +34,6 @@ func muxrouter() {
 }
 
 func simple_sql() {
-
 	db, err := sql.Open("mysql", "golden:password@(127.0.0.1:3306)/staff?parseTime=true")
 	if err != nil {
 		log.Fatal(err)
@@ -136,31 +122,67 @@ func simple_sql() {
 			log.Fatal(err)
 		}
 	}
-
 }
 
+func htmltemp() {
 
-func htmltemp()  {
+	type Todo struct {
+		Title string
+		Done  bool
+	}
+
+	type TodoPageData struct {
+		PageTitle string
+		Todos     []Todo
+	}
 	// tmpl,err := template.ParseFiles("layout.html")
 	//or
 	tmpl := template.Must(template.ParseFiles("layout.html"))
- 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		data := TodoPageData{
-            PageTitle: "My TODO list",
-            Todos: []Todo{
-                {Title: "Task 1", Done: false},
-                {Title: "Task 2", Done: true},
-                {Title: "Task 3", Done: true},
-            },
-        }
-        tmpl.Execute(w,data)
+			PageTitle: "My TODO list",
+			Todos: []Todo{
+				{Title: "Task 1", Done: false},
+				{Title: "Task 2", Done: true},
+				{Title: "Task 3", Done: true},
+			},
+		}
+		tmpl.Execute(w, data)
 	})
-	http.ListenAndServe(":8081",nil)
+	http.ListenAndServe(":8081", nil)
+}
 
+func staticfiles() {
+	fs := http.FileServer(http.Dir("assets/"))
+	http.Handle("/static/", http.StripPrefix("/static", fs))
+}
+
+func forms() {
+
+	type ContactDetails struct {
+		Email   string
+		subject string
+		Message string
+	}
+	tmpl := template.Must(template.ParseFiles("form.html"))
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			tmpl.Execute(w, nil)
+			return
+		}
+		details := ContactDetails{
+			Email:   r.FormValue("email"),
+			subject: r.FormValue("subject"),
+			Message: r.FormValue("message"),
+		}
+		//do something with details
+		_ = details
+		tmpl.Execute(w, struct{ Success bool }{true})
+	})
 }
 
 
 // func main() {
-// 	http.ListenAndServe(":8081", nil)
-
+	
+// 	http.ListenAndServe(":8080", nil)
 // }
